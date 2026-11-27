@@ -1,0 +1,23 @@
+# Render Blueprint — free tier.
+# Deploy from GitHub repo `ask-the-docs`. OPENROUTER_API_KEY is set in the Render dashboard.
+services:
+  - type: web
+    name: ask-the-docs-api
+    runtime: docker
+    rootDir: .
+    dockerfilePath: ./apps/api/Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_MODEL
+        value: deepseek/deepseek-chat
+
+  - type: web
+    name: ask-the-docs-web
+    runtime: docker
+    rootDir: .
+    dockerfilePath: ./apps/web/Dockerfile
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        value: https://ask-the-docs-api.onrender.com

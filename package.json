@@ -1,0 +1,15 @@
+{
+  "name": "ask-the-docs",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.23.0",
+  "devDependencies": {
+    "nx": "^20.6.0"
+  },
+  "scripts": {
+    "dev": "nx run-many --target=serve",
+    "api": "nx run api:serve",
+    "web": "nx run web:serve",
+    "evals": "nx run api:test"
+  }
+}

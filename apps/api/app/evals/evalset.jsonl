@@ -1,0 +1,5 @@
+{"id": "naive-rag", "question": "Why does naive RAG fail?", "must_include": ["identifiers", "hallucinat"]}
+{"id": "approval-gate", "question": "What is an approval gate in agents?", "must_include": ["approval", "irreversible"]}
+{"id": "eval-system", "question": "How do I evaluate an LLM system?", "must_include": ["groundedness", "CI"]}
+{"id": "hybrid-search", "question": "What is hybrid search?", "must_include": ["BM25", "vector"]}
+{"id": "mcp", "question": "What is MCP?", "must_include": ["Model Context Protocol"]}

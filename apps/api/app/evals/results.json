@@ -1,0 +1,43 @@
+{
+  "total": 5,
+  "passed": 5,
+  "rate": 1.0,
+  "gate_ok": true,
+  "cases": [
+    {
+      "id": "naive-rag",
+      "passed": true,
+      "missing": [],
+      "top_source": "rag.md",
+      "score": 5.588
+    },
+    {
+      "id": "approval-gate",
+      "passed": true,
+      "missing": [],
+      "top_source": "agents.md",
+      "score": 5.263
+    },
+    {
+      "id": "eval-system",
+      "passed": true,
+      "missing": [],
+      "top_source": "evals.md",
+      "score": 6.594
+    },
+    {
+      "id": "hybrid-search",
+      "passed": true,
+      "missing": [],
+      "top_source": "rag.md",
+      "score": 3.605
+    },
+    {
+      "id": "mcp",
+      "passed": true,
+      "missing": [],
+      "top_source": "evals.md",
+      "score": 2.647
+    }
+  ]
+}
