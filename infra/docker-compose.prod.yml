@@ -1,0 +1,37 @@
+# VPS deploy behind the existing Traefik (ports 80/443). No host ports bound.
+# ask.josuebarros.com → web:3000. The API is internal-only; the web proxies /api/chat to it.
+services:
+  web:
+    image: ghcr.io/joshbarros/ask-the-docs-web:${IMAGE_TAG:-latest}
+    container_name: ask-the-docs-web
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - API_URL=http://api:8000
+    networks:
+      - default
+      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-public"
+      - "traefik.http.routers.askthedocs.rule=Host(`ask.josuebarros.com`)"
+      - "traefik.http.routers.askthedocs.entrypoints=websecure"
+      - "traefik.http.routers.askthedocs.tls.certresolver=letsencrypt"
+      - "traefik.http.services.askthedocs.loadbalancer.server.port=3000"
+      - "traefik.http.routers.askthedocs.middlewares=security-headers@file,compress@file"
+    depends_on:
+      - api
+
+  api:
+    image: ghcr.io/joshbarros/ask-the-docs-api:${IMAGE_TAG:-latest}
+    container_name: ask-the-docs-api
+    restart: unless-stopped
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - OPENROUTER_MODEL=deepseek/deepseek-chat
+    networks:
+      - default
+
+networks:
+  traefik-public:
+    external: true

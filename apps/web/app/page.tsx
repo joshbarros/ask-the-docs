@@ -6,8 +6,6 @@ import "./globals.css";
 type Source = { id: string; source: string };
 type Message = { role: "user" | "assistant"; text: string; sources?: Source[]; mode?: string };
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
 const suggestions = [
   "Why does naive RAG fail?",
   "What is hybrid search?",
@@ -27,7 +25,7 @@ export default function Home() {
     setInput("");
     setLoading(true);
     try {
-      const res = await fetch(`${API}/chat`, {
+      const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ question }),
