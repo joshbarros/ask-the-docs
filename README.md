@@ -3,6 +3,11 @@
 Production RAG over a document corpus — hybrid retrieval, inline citations and an eval gate.
 Built as an NX monorepo. Live demo of what "grounded answers" actually means.
 
+![license](https://img.shields.io/badge/license-MIT-blue)
+![demo](https://img.shields.io/badge/demo-live-brightgreen)
+![CI](https://github.com/joshbarros/ask-the-docs/actions/workflows/deploy.yml/badge.svg)
+![python](https://img.shields.io/badge/python-3.12-blue)
+
 ## Stack
 - `apps/api` — FastAPI: chunking + BM25 retrieval, grounded answers via **OpenRouter** (`deepseek/deepseek-chat`), offline eval gate.
 - `apps/web` — Next.js chat UI with clickable citations.
