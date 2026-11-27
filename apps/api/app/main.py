@@ -33,6 +33,8 @@ def health() -> dict:
         "ok": True,
         "llm": settings.llm_enabled,
         "model": settings.openrouter_model,
+        "embedding_model": settings.embedding_model,
+        "hybrid": retriever.hybrid,
         "chunks": len(retriever.chunks),
     }
 

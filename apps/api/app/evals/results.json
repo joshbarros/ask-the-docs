@@ -9,35 +9,35 @@
       "passed": true,
       "missing": [],
       "top_source": "rag.md",
-      "score": 5.588
+      "score": 0.0328
     },
     {
       "id": "approval-gate",
       "passed": true,
       "missing": [],
       "top_source": "agents.md",
-      "score": 5.263
+      "score": 0.0325
     },
     {
       "id": "eval-system",
       "passed": true,
       "missing": [],
       "top_source": "evals.md",
-      "score": 6.594
+      "score": 0.0328
     },
     {
       "id": "hybrid-search",
       "passed": true,
       "missing": [],
       "top_source": "rag.md",
-      "score": 3.605
+      "score": 0.0328
     },
     {
       "id": "mcp",
       "passed": true,
       "missing": [],
       "top_source": "evals.md",
-      "score": 2.647
+      "score": 0.0323
     }
   ]
 }

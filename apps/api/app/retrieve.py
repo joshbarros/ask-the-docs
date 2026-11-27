@@ -5,6 +5,9 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from app.config import settings
+from app.embeddings import embed
+
 DATA_DIR = Path(__file__).parent / "data" / "docs"
 _WORD = re.compile(r"[a-z0-9]+")
 
@@ -17,10 +20,10 @@ class Chunk:
 
 
 class Retriever:
-    """Chunking + a BM25 index (no external deps). Deterministic and cheap.
+    """Chunking + hybrid retrieval: BM25 (lexical) + cosine (embeddings), fused with RRF.
 
-    Production note: this is the lexical half of hybrid search. Swap in a vector
-    store (pgvector / FAISS) behind the same `search()` interface for semantic recall.
+    Embeddings come from the HuggingFace free inference API; if they are unavailable
+    (offline / no token / rate-limited), retrieval degrades gracefully to BM25-only.
     """
 
     def __init__(self, docs_dir: Path = DATA_DIR, chunk_size: int = 500, overlap: int = 80):
@@ -30,12 +33,18 @@ class Retriever:
         self._tok: list[list[str]] = []
         self._df: dict[str, int] = {}
         self._n = 0
+        self._vecs: list[list[float]] | None = None
+        self._embedded = False
         self._load(docs_dir)
         self._build()
 
     @staticmethod
     def _tokens(text: str) -> list[str]:
         return _WORD.findall(text.lower())
+
+    @property
+    def hybrid(self) -> bool:
+        return self._vecs is not None
 
     def _chunk(self, text: str) -> list[str]:
         text = re.sub(r"\s+", " ", text).strip()
@@ -72,8 +81,17 @@ class Retriever:
         for j, part in enumerate(self._chunk(text)):
             self.chunks.append(Chunk(id=f"{safe}:{j}", source=title, text=part))
         self._build()
+        self._embedded = False  # re-embed on next search
 
-    def search(self, query: str, k: int = 4) -> list[dict]:
+    def _ensure_vectors(self) -> None:
+        if self._embedded or not settings.embeddings_enabled:
+            return
+        self._embedded = True
+        vecs = embed([c.text for c in self.chunks])
+        if vecs and len(vecs) == len(self.chunks):
+            self._vecs = vecs
+
+    def _bm25_scores(self, query: str, limit: int = 20) -> list[tuple[float, int]]:
         q = self._tokens(query)
         if not q or not self.chunks:
             return []
@@ -92,11 +110,38 @@ class Retriever:
             if s > 0:
                 scored.append((s, i))
         scored.sort(reverse=True)
-        out: list[dict] = []
-        for s, i in scored[:k]:
-            c = self.chunks[i]
-            out.append({"id": c.id, "source": c.source, "score": round(s, 3), "text": c.text})
-        return out
+        return scored[:limit]
+
+    def _cosine_scores(self, query: str, limit: int = 20) -> list[tuple[float, int]]:
+        if not self._vecs:
+            return []
+        qv = embed([query])
+        if not qv:
+            return []
+        q = qv[0]
+        scored = [(sum(a * b for a, b in zip(q, v)), i) for i, v in enumerate(self._vecs)]
+        scored.sort(reverse=True)
+        return scored[:limit]
+
+    def search(self, query: str, k: int = 4) -> list[dict]:
+        self._ensure_vectors()
+        bm25 = self._bm25_scores(query)
+        if self._vecs:
+            cos = self._cosine_scores(query)
+            rrf: dict[int, float] = {}
+            for rank, (_, i) in enumerate(bm25):
+                rrf[i] = rrf.get(i, 0) + 1 / (60 + rank + 1)
+            for rank, (_, i) in enumerate(cos):
+                rrf[i] = rrf.get(i, 0) + 1 / (60 + rank + 1)
+            order = sorted(rrf, key=rrf.get, reverse=True)[:k]
+            return [
+                {"id": self.chunks[i].id, "source": self.chunks[i].source, "score": round(rrf[i], 4), "text": self.chunks[i].text}
+                for i in order
+            ]
+        return [
+            {"id": self.chunks[i].id, "source": self.chunks[i].source, "score": round(s, 3), "text": self.chunks[i].text}
+            for s, i in bm25[:k]
+        ]
 
 
 retriever = Retriever()
